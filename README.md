@@ -1,4 +1,4 @@
-# Quando
+# Cuando
 
 This would be a system to properly find a time when to schedule online meetings.
 The planned features are:
@@ -11,7 +11,4 @@ This is an hobby project (so progress is slow) born out of the frustration of no
 [Doodle](https://doodle.com) is overall the best one but selecting multiple dates is a pain, [zvite](https://zvite.co) solve that problem but lack everything else.
 Then websites like [when2meet.com](https://www.when2meet.com/) almost do their job but the UI is too bad.
 
-The temporary name comes from the Italian quando which means when.
-
-
-P.S. help or suggestions how to find a proper platform is more than welcome :)
+The temporary name cuando, in spanish means when.
