@@ -1,27 +1,17 @@
+# Quando
 
-# FullCalendar React+Redux Example Project
+This would be a system to properly find a time when to schedule online meetings.
+The planned features are:
+- First class supports for time zones
+- ability to quickly create/select multiple time slots
+- nice UI
 
-For complete instructions on how to initialize your build system, see the [FullCalendar React Docs &raquo;](https://fullcalendar.io/docs/react)
+This is an hobby project (so progress is slow) born out of the frustration of not finding a online tool that does its job. Due to the relative simplicity of this kind of website I decided to develop my own one.
 
-**About this example:** the state for events is owned by a [Redux](https://redux.js.org/) store and reducer. This technique is more tedious to set up than the [simple technique](../react) but allows the state to be accessed when a FullCalendar component is not rendered.
+[Doodle](https://doodle.com) is overall the best one but selecting multiple dates is a pain, [zvite](https://zvite.co) solve that problem but lack everything else.
+Then websites like [when2meet.com](https://www.when2meet.com/) almost do their job but the UI is too bad.
 
-
-## Installation
-
-```bash
-git clone https://github.com/fullcalendar/fullcalendar-example-projects.git
-cd fullcalendar-example-projects/react-redux
-npm install
-```
+The temporary name comes from the Italian quando which means when.
 
 
-## Build Commands
-
-```bash
-npm run start # builds and opens a web browser
-
-# other commands:
-npm run build # builds files into dist/ directory
-npm run watch # same as build, but watches for changes
-npm run clean # start fresh
-```
+P.S. help or suggestions how to find a proper platform is more than welcome :)
