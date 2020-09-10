@@ -28,10 +28,7 @@ module.exports = {
   },
   plugins: [
     new HtmlWebpackPlugin({
-      title: packageMeta.title
+      title: "Cuando"
     })
   ],
-  devServer: {
-    disableHostCheck: true // for codepen.io, REMOVE THIS IN YOUR PROJECT
-  }
 }
