@@ -9,6 +9,9 @@ module.exports = {
   resolve: {
     extensions: [ '.js', '.jsx' ]
   },
+  devServer: {
+    historyApiFallback: true
+  },
   module: {
     rules: [
       {
@@ -24,7 +27,7 @@ module.exports = {
   },
   output: {
     filename: 'main.js',
-    path: path.join(__dirname, 'dist')
+    path: path.join(__dirname, 'dist'),
   },
   plugins: [
     new HtmlWebpackPlugin({

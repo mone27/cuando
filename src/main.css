@@ -7,6 +7,9 @@ body > div { /* the react root */
   height: 100%;
 }
 
+body{
+  font-family: Arial, Helvetica Neue, Helvetica, sans-serif;
+}
 h2 {
   margin: 0;
   font-size: 16px;
@@ -28,13 +31,14 @@ b { /* used for event dates/times */
 
 .demo-app {
   display: flex;
+  flex-direction: column;
   min-height: 100%;
   font-family: Arial, Helvetica Neue, Helvetica, sans-serif;
   font-size: 14px;
 }
 
 .demo-app-sidebar {
-  width: 300px;
+  /*width: 300px;*/
   line-height: 1.5;
   background: #eaf9ff;
   border-right: 1px solid #d3e2e8;
@@ -42,6 +46,8 @@ b { /* used for event dates/times */
 
 .demo-app-sidebar-section {
   padding: 2em;
+  width: 500px;
+  margin: auto;
 }
 
 .demo-app-main {
@@ -53,3 +59,46 @@ b { /* used for event dates/times */
   max-width: 1100px;
   margin: 0 auto;
 }
+
+
+/* Style the header with a grey background and some padding */
+.header {
+  overflow: hidden;
+  background-color: #f1f1f1;
+  padding: 20px 10px;
+}
+
+.header a {
+  float: left;
+  color: black;
+  text-align: center;
+  padding: 12px;
+  text-decoration: none;
+  font-size: 18px;
+  line-height: 25px;
+  border-radius: 4px;
+}
+.center{
+  text-align: center;
+}
+/* Change the background color on mouse-over */
+.header a:hover {
+  background-color: #ddd;
+  color: black;
+}
+
+/* Style the active/current link*/
+.header-right a.active {
+  background-color: dodgerblue;
+  color: white;
+}
+
+.header-right {
+  float: right;
+}
+
+.home{
+  margin-top: 20px;
+  margin-left: 30px;
+}
+
