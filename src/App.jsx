@@ -1,8 +1,14 @@
+import { useEffect, useState} from 'react'
 import React from 'react'
-import FullCalendar, { formatDate } from '@fullcalendar/react'
-import { toMoment, toMomentDuration } from '@fullcalendar/moment'
-import timeGridPlugin from '@fullcalendar/timegrid'
-import interactionPlugin from '@fullcalendar/interaction'
+import { Calendar, momentLocalizer} from 'react-big-calendar'
+import moment from 'moment'
+import 'react-big-calendar/lib/css/react-big-calendar.css'
+
+
+// import FullCalendar, { formatDate } from '@fullcalendar/react'
+// import { toMoment, toMomentDuration } from '@fullcalendar/moment'
+// import timeGridPlugin from '@fullcalendar/timegrid'
+// import interactionPlugin from '@fullcalendar/interaction'
 
 import {BrowserRouter, Route, NavLink, Switch, Link} from "react-router-dom";
 
@@ -25,16 +31,11 @@ firebase.initializeApp(firebaseConfig);
 firebase.analytics();
 let database =  firebase.database();
 
+const localizer = momentLocalizer(moment)
 
 
-class App extends React.Component{
-    constructor(props) {
-        super(props);
-    }
-    render() {
-
+function App(props) {
         return (
-
         <BrowserRouter>
             <header className="header">
                 <NavLink to="/">Home</NavLink>
@@ -49,8 +50,7 @@ class App extends React.Component{
                 <Route render={() => <h1>404: page not found</h1>} />
             </Switch>
         </BrowserRouter>
-    )
-    }
+        )
 }
 
 class Home extends React.Component{
@@ -82,115 +82,145 @@ class Home extends React.Component{
     }
 }
 
-class CreatePoll extends React.Component {
-        calendarRef = React.createRef()
+function CreatePoll(props){
+    // let [events, setEvents] = useState([{title: 'first', start: '2020-10-23 10:00', end: '2020-10-23 12:00'}])
+    let events = [{
+        title: 'test',
+        start: 'Mon Oct 19 2020 01:30:00 GMT+0200',
+        end: 'Mon Oct 19 2020 03:30:00 GMT+0200'
+        }]
+    let [eventDuration, setEventDuration] = useState('01:00')
 
-        constructor(props) {
-                super(props);
-                this.eventDuration = "01:00"
-                this.title = "First Poll"
-        }
+    function onSelect(selection) {
+        console.log(selection)
+        setEvents(selection.slots)
+    }
 
-        render() {
-        return (
-            <div className='demo-app'>
-                <CalendarSidebar changeEventDuration={this.changeEventDuration}
-                                 changeTitle={this.changeTitle}
-                                 title={this.title}
-                />
-                <div className='demo-app-main'>
-                    <FullCalendar
-                        plugins={[ timeGridPlugin, interactionPlugin]}
+    return (<div className='demo-app-main'>
 
-                        ref={this.calendarRef}
-                        initialView='timeGridWeek'
-                        editable={true}
-                        selectable={true}
-                        select={this.handleDateSelect}
-                        events={this.props.events}
-                        eventContent={renderEventContent} // custom render function
-                        eventClick={this.handleEventClick}
-                        // eventAdd={this.handleEventChange}
-                        // eventChange={this.handleEventChange}
-                        // eventRemove={this.handleEventChange}
-                        headerToolbar={{
-                            left: 'prev,next today',
-                            center: 'title',
-                            right: 'timeGridWeek,timeGridDay'
-                        }}
-                        footerToolbar={{
-                            right: 'submitButton'
-                        }}
-                        customButtons={{
-                            submitButton: {
-                                text: 'Create poll',
-                                click: this.submitPoll
-                            }}
-                        }
-                    />
+                    <div>
+                        <Calendar
+                            localizer={localizer}
+                            events={events}
+                            views={['week']}
+                            defaultView = 'week'
+                            style={{ height: 800}}
+                            selectable={true}
+                            onSelectSlot={onSelect}
+                        />
+                    </div>
                 </div>
-            </div>
-
-        )
-    }
-
-    // handlers for user actions
-    // ------------------------------------------------------------------------------------------
-
-    handleDateSelect = (selectInfo) => {
-        let calendarApi = this.calendarRef.current.getApi()
-        let title = "Event title"
-
-        calendarApi.unselect() // clear date selection
-        let start= toMoment(selectInfo.start, calendarApi)
-        let end= toMoment(selectInfo.end, calendarApi)
-        let duration = toMomentDuration(this.eventDuration)
-
-        calendarApi.batchRendering( () => {
-                for (let event = start; event.isBefore(end); ) {
-            calendarApi.addEvent({
-                title,
-                start: event.format(),
-                end: event.add(duration).format()
-            })
-        }})
-
-
-    }
-
-    handleEventClick = (clickInfo) => {
-            clickInfo.event.remove() // will render immediately. will call handleEventRemove
-    }
-
-    // handleEventChange = (AddInfo) => {
-    //     this.setState({events: this.calendarRef.current.getApi().getEvents()});
-    // }
-
-    changeEventDuration = (event) => {
-        this.eventDuration = event.target.value
-    }
-
-    submitPoll = () => {
-        let calendar = this.calendarRef.current.getApi().getEvents()
-        let events = calendar.map((event) => event.toPlainObject());
-        console.log(events)
-        let pollref = database.ref('/polls/').push()
-        pollref.set({
-            title: this.title,
-            events: events
-        }, (error) => {
-            console.log(error)
-        })
-        //this.props.history.push('/view/' + pollref.key);
-        this.props.history.push('/')
-    }
-
-    changeTitle = (event) => {
-        this.title = event.target.value
-    }
-
-
+    )
 }
+// class CreatePoll extends React.Component {
+//         calendarRef = React.createRef()
+//
+//         constructor(props) {
+//                 super(props);
+//                 this.eventDuration = "01:00"
+//                 this.title = "First Poll"
+//         }
+//
+//         render() {
+//         return (
+//             <div className='demo-app'>
+//                 <CalendarSidebar changeEventDuration={this.changeEventDuration}
+//                                  changeTitle={this.changeTitle}
+//                                  title={this.title}
+//                 />
+//                 <div className='demo-app-main'>
+//                     <FullCalendar
+//                         plugins={[ timeGridPlugin, interactionPlugin]}
+//
+//                         ref={this.calendarRef}
+//                         initialView='timeGridWeek'
+//                         editable={true}
+//                         selectable={true}
+//                         select={this.handleDateSelect}
+//                         events={this.props.events}
+//                         eventContent={renderEventContent} // custom render function
+//                         eventClick={this.handleEventClick}
+//                         // eventAdd={this.handleEventChange}
+//                         // eventChange={this.handleEventChange}
+//                         // eventRemove={this.handleEventChange}
+//                         headerToolbar={{
+//                             left: 'prev,next today',
+//                             center: 'title',
+//                             right: 'timeGridWeek,timeGridDay'
+//                         }}
+//                         footerToolbar={{
+//                             right: 'submitButton'
+//                         }}
+//                         customButtons={{
+//                             submitButton: {
+//                                 text: 'Create poll',
+//                                 click: this.submitPoll
+//                             }}
+//                         }
+//                     />
+//                 </div>
+//             </div>
+//
+//         )
+//     }
+//
+//     // handlers for user actions
+//     // ------------------------------------------------------------------------------------------
+//
+//     handleDateSelect = (selectInfo) => {
+//         let calendarApi = this.calendarRef.current.getApi()
+//         let title = "Event title"
+//
+//         calendarApi.unselect() // clear date selection
+//         let start= toMoment(selectInfo.start, calendarApi)
+//         let end= toMoment(selectInfo.end, calendarApi)
+//         let duration = toMomentDuration(this.eventDuration)
+//
+//         calendarApi.batchRendering( () => {
+//                 for (let event = start; event.isBefore(end); ) {
+//             calendarApi.addEvent({
+//                 title,
+//                 start: event.format(),
+//                 end: event.add(duration).format()
+//             })
+//         }})
+//
+//
+//     }
+//
+//     handleEventClick = (clickInfo) => {
+//             clickInfo.event.remove() // will render immediately. will call handleEventRemove
+//     }
+//
+//     // handleEventChange = (AddInfo) => {
+//     //     this.setState({events: this.calendarRef.current.getApi().getEvents()});
+//     // }
+//
+//     changeEventDuration = (event) => {
+//         this.eventDuration = event.target.value
+//     }
+//
+//     submitPoll = () => {
+//         let calendar = this.calendarRef.current.getApi().getEvents()
+//         let events = calendar.map((event) => event.toPlainObject());
+//         console.log(events)
+//         let pollref = database.ref('/polls/').push()
+//         pollref.set({
+//             title: this.title,
+//             events: events
+//         }, (error) => {
+//             console.log(error)
+//         })
+//         //this.props.history.push('/view/' + pollref.key);
+//         this.props.history.push('/')
+//     }
+//
+//     changeTitle = (event) => {
+//         this.title = event.target.value
+//     }
+//
+//
+// }
 
 function CalendarSidebar(props) {
     return (
@@ -226,122 +256,122 @@ function renderEventContent(eventInfo) {
 
 class ViewPoll extends React.Component{
 
-    calendarRef = React.createRef()
-    title = React.createRef()
-    constructor(props) {
-        super(props);
-        this.selectedEvents = []
-    }
-
-    render() {
-        return (
-            <div className='demo-app'>
-                <div className='demo-app-main'>
-                    <div className='center'>
-                        <h1 ref={this.title}> Title </h1>
-                    </div>
-                    <FullCalendar
-                        plugins={[ timeGridPlugin, interactionPlugin]}
-                        ref={this.calendarRef}
-                        initialView='timeGridWeek'
-                        editable={false}
-                        selectable={true}
-                        select={this.handleDateSelect}
-                        eventContent={renderEventContent} // custom render function
-                        eventClick={this.handleEventClick}
-                        headerToolbar={{
-                            left: 'prev,next today',
-                            center: 'title',
-                            right: 'timeGridWeek,timeGridDay'
-                        }}
-                        footerToolbar={{
-                            right: 'submitButton'
-                        }}
-                        customButtons={{
-                            submitButton: {
-                                text: 'Submit poll',
-                                click: this.submitPoll
-                            }}
-                        }
-                    />
-                </div>
-            </div>
-
-        )
-    }
-
-    // handlers for user actions
-    // ------------------------------------------------------------------------------------------
-    componentDidMount = () => {
-        let calendarApi = this.calendarRef.current.getApi()
-        let poll = database.ref('/polls/' + this.props.match.params.pollId)
-        poll.once('value').then((poll) => {
-            this.title.current.innerHTML = poll.val().title;
-            this.events = poll.val().events
-            calendarApi.batchRendering( () => {
-                poll.val().events.forEach((event) => {
-                    calendarApi.addEvent({
-                        start: event.start,
-                        end: event.end
-                    })
-                })
-            })
-        })
-    }
-
-    handleDateSelect = (selectInfo) => {
-        let calendarApi = this.calendarRef.current.getApi()
-        calendarApi.unselect() // clear date selection
-        calendarApi.getEvents().forEach((event) =>{
-            if (event.start >= selectInfo.start && event.end <= selectInfo.end){
-                this.selectEvent(event)
-            }
-        })
-    }
-    handleEventClick = (clickInfo) => {
-        let calendarApi = this.calendarRef.current.getApi()
-        const index = this.selectedEvents.indexOf(clickInfo.event.start)
-        if (index > -1) { //if event is selected unselect it
-            this.unselectEvent(clickInfo.event)
-        }
-        else{
-            this.selectEvent(clickInfo.event)
-        }
-    }
-
-    selectEvent = (event) =>{
-        this.selectedEvents.push(event.start)
-        event.setProp('backgroundColor', 'red')
-        event.setProp('borderColor', 'red')
-        console.log(`selected event ${event.start} `)
-    }
-    unselectEvent = (event) =>{
-        const index = this.selectedEvents.indexOf(event.start)
-        this.selectedEvents.splice(index, 1);
-        event.setProp('backgroundColor', '#3788d8')
-        event.setProp('borderColor', '#3788d8') // use CSS variable?
-        console.log(`unselected ${event.start} `)
-    }
-
-
-
-    submitPoll = () => {
-        let userId = database.ref('/users/').push().key
-        let pollId = this.props.match.params.pollId
-        let events = this.events.map((event) =>{
-            if (event.start in this.selectedEvents){
-                event['available'][userId] = true
-            }
-            return event
-        })
-        console.log(this.even)
-        database.ref('/polls/'+pollId+'/events/').set(
-            events,
-            err => console.log(err)
-        )
-        alert(`successfully submitted ${events.lenght} where you are available`)
-        this.props.history.push('/');
-    }
+    // calendarRef = React.createRef()
+    // title = React.createRef()
+    // constructor(props) {
+    //     super(props);
+    //     this.selectedEvents = []
+    // }
+    //
+    // render() {
+    //     return (
+    //         <div className='demo-app'>
+    //             <div className='demo-app-main'>
+    //                 <div className='center'>
+    //                     <h1 ref={this.title}> Title </h1>
+    //                 </div>
+    //                 <FullCalendar
+    //                     plugins={[ timeGridPlugin, interactionPlugin]}
+    //                     ref={this.calendarRef}
+    //                     initialView='timeGridWeek'
+    //                     editable={false}
+    //                     selectable={true}
+    //                     select={this.handleDateSelect}
+    //                     eventContent={renderEventContent} // custom render function
+    //                     eventClick={this.handleEventClick}
+    //                     headerToolbar={{
+    //                         left: 'prev,next today',
+    //                         center: 'title',
+    //                         right: 'timeGridWeek,timeGridDay'
+    //                     }}
+    //                     footerToolbar={{
+    //                         right: 'submitButton'
+    //                     }}
+    //                     customButtons={{
+    //                         submitButton: {
+    //                             text: 'Submit poll',
+    //                             click: this.submitPoll
+    //                         }}
+    //                     }
+    //                 />
+    //             </div>
+    //         </div>
+    //
+    //     )
+    // }
+    //
+    // // handlers for user actions
+    // // ------------------------------------------------------------------------------------------
+    // componentDidMount = () => {
+    //     let calendarApi = this.calendarRef.current.getApi()
+    //     let poll = database.ref('/polls/' + this.props.match.params.pollId)
+    //     poll.once('value').then((poll) => {
+    //         this.title.current.innerHTML = poll.val().title;
+    //         this.events = poll.val().events
+    //         calendarApi.batchRendering( () => {
+    //             poll.val().events.forEach((event) => {
+    //                 calendarApi.addEvent({
+    //                     start: event.start,
+    //                     end: event.end
+    //                 })
+    //             })
+    //         })
+    //     })
+    // }
+    //
+    // handleDateSelect = (selectInfo) => {
+    //     let calendarApi = this.calendarRef.current.getApi()
+    //     calendarApi.unselect() // clear date selection
+    //     calendarApi.getEvents().forEach((event) =>{
+    //         if (event.start >= selectInfo.start && event.end <= selectInfo.end){
+    //             this.selectEvent(event)
+    //         }
+    //     })
+    // }
+    // handleEventClick = (clickInfo) => {
+    //     let calendarApi = this.calendarRef.current.getApi()
+    //     const index = this.selectedEvents.indexOf(clickInfo.event.start)
+    //     if (index > -1) { //if event is selected unselect it
+    //         this.unselectEvent(clickInfo.event)
+    //     }
+    //     else{
+    //         this.selectEvent(clickInfo.event)
+    //     }
+    // }
+    //
+    // selectEvent = (event) =>{
+    //     this.selectedEvents.push(event.start)
+    //     event.setProp('backgroundColor', 'red')
+    //     event.setProp('borderColor', 'red')
+    //     console.log(`selected event ${event.start} `)
+    // }
+    // unselectEvent = (event) =>{
+    //     const index = this.selectedEvents.indexOf(event.start)
+    //     this.selectedEvents.splice(index, 1);
+    //     event.setProp('backgroundColor', '#3788d8')
+    //     event.setProp('borderColor', '#3788d8') // use CSS variable?
+    //     console.log(`unselected ${event.start} `)
+    // }
+    //
+    //
+    //
+    // submitPoll = () => {
+    //     let userId = database.ref('/users/').push().key
+    //     let pollId = this.props.match.params.pollId
+    //     let events = this.events.map((event) =>{
+    //         if (event.start in this.selectedEvents){
+    //             event['available'][userId] = true
+    //         }
+    //         return event
+    //     })
+    //     console.log(this.even)
+    //     database.ref('/polls/'+pollId+'/events/').set(
+    //         events,
+    //         err => console.log(err)
+    //     )
+    //     alert(`successfully submitted ${events.lenght} where you are available`)
+    //     this.props.history.push('/');
+    // }
 
 
 
