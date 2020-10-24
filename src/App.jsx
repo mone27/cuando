@@ -74,7 +74,6 @@ class Home extends React.Component{
             let pollsList = []
             for (const key in polls){
                 pollsList.push({key: key, title: polls[key].title})
-                console.log(JSON.stringify(pollsList))
             }
             this.setState({polls: pollsList})
         }, (error) => {
@@ -109,7 +108,7 @@ class CreatePoll extends React.Component {
                         selectable={true}
                         select={this.handleDateSelect}
                         events={this.props.events}
-                        // eventContent={renderEventContent} // custom render function
+                        eventContent={renderEventContent} // custom render function
                         eventClick={this.handleEventClick}
                         // eventAdd={this.handleEventChange}
                         // eventChange={this.handleEventChange}
@@ -215,13 +214,13 @@ function CalendarSidebar(props) {
 }
 
 
-// function renderEventContent(eventInfo) {
-//     return (
-//         <>
-//             <b>{eventInfo.timeText}</b>
-//         </>
-//     )
-// }
+function renderEventContent(eventInfo) {
+    return (
+        <>
+            <b>{eventInfo.timeText}</b>
+        </>
+    )
+}
 
 
 
@@ -248,7 +247,7 @@ class ViewPoll extends React.Component{
                         editable={false}
                         selectable={true}
                         select={this.handleDateSelect}
-                        // eventContent={renderEventContent} // custom render function
+                        eventContent={renderEventContent} // custom render function
                         eventClick={this.handleEventClick}
                         headerToolbar={{
                             left: 'prev,next today',
@@ -278,6 +277,7 @@ class ViewPoll extends React.Component{
         let poll = database.ref('/polls/' + this.props.match.params.pollId)
         poll.once('value').then((poll) => {
             this.title.current.innerHTML = poll.val().title;
+            this.events = poll.val().events
             calendarApi.batchRendering( () => {
                 poll.val().events.forEach((event) => {
                     calendarApi.addEvent({
@@ -298,23 +298,9 @@ class ViewPoll extends React.Component{
             }
         })
     }
-    selectEvent = (event) =>{
-        this.selectedEvents.push(event.id)
-        event.setProp('backgroundColor', 'red')
-        event.setProp('borderColor', 'red')
-        console.log(`selected event ${event.start} `)
-    }
-    unselectEvent = (event) =>{
-        const index = this.selectedEvents.indexOf(event.id)
-        this.selectedEvents.splice(index, 1);
-        event.setProp('backgroundColor', '#3788d8')
-        event.setProp('borderColor', '#3788d8')
-        console.log(`unselected ${event.start} `)
-    }
-
     handleEventClick = (clickInfo) => {
         let calendarApi = this.calendarRef.current.getApi()
-        const index = this.selectedEvents.indexOf(clickInfo.event.id)
+        const index = this.selectedEvents.indexOf(clickInfo.event.start)
         if (index > -1) { //if event is selected unselect it
             this.unselectEvent(clickInfo.event)
         }
@@ -323,15 +309,38 @@ class ViewPoll extends React.Component{
         }
     }
 
+    selectEvent = (event) =>{
+        this.selectedEvents.push(event.start)
+        event.setProp('backgroundColor', 'red')
+        event.setProp('borderColor', 'red')
+        console.log(`selected event ${event.start} `)
+    }
+    unselectEvent = (event) =>{
+        const index = this.selectedEvents.indexOf(event.start)
+        this.selectedEvents.splice(index, 1);
+        event.setProp('backgroundColor', '#3788d8')
+        event.setProp('borderColor', '#3788d8') // use CSS variable?
+        console.log(`unselected ${event.start} `)
+    }
+
+
+
     submitPoll = () => {
-    //     let pollPath = '/polls/' + this.props.match.params.pollId
-    //     database.ref().update({
-    //         [pollPath]: this.selectedEvents
-    //     }, (error) => {
-    //         console.log(error)
-    //     })
-    //     alert("you selected"+JSON.stringify(this.selectedEvents))
-    //     this.props.history.push('/');
+        let userId = database.ref('/users/').push().key
+        let pollId = this.props.match.params.pollId
+        let events = this.events.map((event) =>{
+            if (event.start in this.selectedEvents){
+                event['available'][userId] = true
+            }
+            return event
+        })
+        console.log(this.even)
+        database.ref('/polls/'+pollId+'/events/').set(
+            events,
+            err => console.log(err)
+        )
+        alert(`successfully submitted ${events.lenght} where you are available`)
+        this.props.history.push('/');
     }
 
 
