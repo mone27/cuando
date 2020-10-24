@@ -5,12 +5,7 @@ import moment from 'moment'
 import 'react-big-calendar/lib/css/react-big-calendar.css'
 
 
-// import FullCalendar, { formatDate } from '@fullcalendar/react'
-// import { toMoment, toMomentDuration } from '@fullcalendar/moment'
-// import timeGridPlugin from '@fullcalendar/timegrid'
-// import interactionPlugin from '@fullcalendar/interaction'
-
-import {BrowserRouter, Route, NavLink, Switch, Link} from "react-router-dom";
+import {BrowserRouter, Route, NavLink, Switch, Link, useHistory} from "react-router-dom";
 
 import firebase from "firebase";
 
@@ -33,6 +28,17 @@ let database =  firebase.database();
 
 const localizer = momentLocalizer(moment)
 
+Array.prototype.uniqueEvents = function() {
+    var a = this.concat();
+    for(var i=0; i<a.length; ++i) {
+        for(var j=i+1; j<a.length; ++j) {
+            if(a[i].start.getTime() === a[j].start.getTime())
+                a.splice(j--, 1);
+        }
+    }
+
+    return a;
+};
 
 function App(props) {
         return (
@@ -44,7 +50,7 @@ function App(props) {
                 </div>
             </header>
             <Switch>
-                <Route path="/create" render={(props) => {return <CreatePoll history={props.history} match={props.match}/>}} />
+                <Route path="/create" render={(props) => {return <CreatePoll history={props.history} match={props.match}/>}} /> //can remove this quick hack
                 <Route path="/view/:pollId" render={(props) => {return <ViewPoll history={props.history} match={props.match}/>}} />
                 <Route path="/" render={(props) => <Home history={props.history} match={props.match}/>} />
                 <Route render={() => <h1>404: page not found</h1>} />
@@ -81,37 +87,95 @@ class Home extends React.Component{
         })
     }
 }
-
+function eventNotPresent(eventStart, events){
+    console.log(events)
+    events.forEach(
+        (ev) => {
+            if (ev.start === eventStart) {
+                return false
+            }}
+    )
+    return true
+}
 function CreatePoll(props){
-    // let [events, setEvents] = useState([{title: 'first', start: '2020-10-23 10:00', end: '2020-10-23 12:00'}])
-    let events = [{
-        title: 'test',
-        start: 'Mon Oct 19 2020 01:30:00 GMT+0200',
-        end: 'Mon Oct 19 2020 03:30:00 GMT+0200'
-        }]
-    let [eventDuration, setEventDuration] = useState('01:00')
+    let [events, setEvents] = useState([])
+    let [eventDuration, setEventDuration] = useState(60) //duration is expressed in minutes
+    let [title, setTitle] = useState("Untitled Poll") // can find a cooler default name here
+    let history = useHistory()
 
     function onSelect(selection) {
         console.log(selection)
-        setEvents(selection.slots)
+        setEvents((events) => {
+            let newEvents = selection.slots.map(
+                (slotStart) => {
+                        return(
+                            {
+                                start: slotStart,
+                                end: toEventEnd(slotStart)
+                            }
+                        )
+                    })
+            return events.concat(newEvents).uniqueEvents()
+        })
     }
 
-    return (<div className='demo-app-main'>
+    function submitPoll () {
+        let pollRef = database.ref('/polls/').push()
+        pollRef.set({
+            title: title,
+            events: events
+        }, (error) => {
+            console.log(error)
+        })
+        //this.props.history.push('/view/' + pollref.key);
+        history.push('/');
+        alert("created poll");
+    }
 
-                    <div>
-                        <Calendar
-                            localizer={localizer}
-                            events={events}
-                            views={['week']}
-                            defaultView = 'week'
-                            style={{ height: 800}}
-                            selectable={true}
-                            onSelectSlot={onSelect}
-                        />
-                    </div>
+    function toEventEnd(start){
+        return moment(start).add(eventDuration, 'minutes').toDate();
+    }
+
+    function onSelectEvent(selEvent, _){
+        setEvents((events)=> {
+                return events.filter((ev)=> ev.start !== selEvent.start)
+            })
+    }
+
+
+    return (
+        <div className='demo-app'>
+            {/*<CalendarSidebar*/}
+            {/*    changeEventDuration={(ev) => setEventDuration(ev.target.value)}*/}
+            {/*    changeTitle={(ev) => setTitle(ev.target.value)}*/}
+            {/*    title={title}*/}
+            {/*/>*/}
+            <div className='demo-app-main'>
+                <div>
+                    <Calendar
+                        localizer={localizer}
+                        events={events}
+                        views={['week', 'month']}
+                        defaultView='week'
+                        step={eventDuration}
+                        timeslots={1}
+                        style={{height: "75vh"}}
+                        selectable={true}
+                        onSelectSlot={onSelect}
+                        onSelectEvent={onSelectEvent}
+                        titleAccessor={() => ""}
+
+                    />
                 </div>
+                <div>
+                    <button onClick={submitPoll}>Submit</button>
+                </div>
+            </div>
+        </div>
     )
 }
+
+
 // class CreatePoll extends React.Component {
 //         calendarRef = React.createRef()
 //
@@ -229,9 +293,9 @@ function CalendarSidebar(props) {
                 <label htmlFor="event-duration">Event duration</label>
 
                 <select name="event-duration" onChange={props.changeEventDuration}>
-                    <option value="01:00">1h</option>
-                    <option value="02:00">2h</option>
-                    <option value="03:00">3h</option>
+                    <option value="60">1h</option>
+                    <option value="120">2h</option>
+                    <option value="180">3h</option>
 
                 </select>
             </div>
