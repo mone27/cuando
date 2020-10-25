@@ -7,23 +7,9 @@ import 'react-big-calendar/lib/css/react-big-calendar.css'
 
 import {BrowserRouter, Route, NavLink, Switch, Link, useHistory} from "react-router-dom";
 
-import firebase from "firebase";
+import firebase from './firebase'
+import SignInScreen from "./account";
 
-
-
-let firebaseConfig = {
-    apiKey: "AIzaSyDweP2M-lzNHqg-R4Fq-kjtcZ8yKdDEino",
-    authDomain: "cuando-347e1.firebaseapp.com",
-    databaseURL: "https://cuando-347e1.firebaseio.com",
-    projectId: "cuando-347e1",
-    storageBucket: "cuando-347e1.appspot.com",
-    messagingSenderId: "1000921888211",
-    appId: "1:1000921888211:web:b01527b54ec9534a5aeb26",
-    measurementId: "G-Z50Q3H1310"
-};
-
-firebase.initializeApp(firebaseConfig);
-firebase.analytics();
 let database =  firebase.database();
 
 const localizer = momentLocalizer(moment)
@@ -47,11 +33,13 @@ function App(props) {
                 <NavLink to="/">Home</NavLink>
                 <div className='header-right'>
                     <NavLink to="/create">Create Poll</NavLink>
+                    <NavLink to="/account">Account</NavLink>
                 </div>
             </header>
             <Switch>
                 <Route path="/create" render={(props) => {return <CreatePoll history={props.history} match={props.match}/>}} /> //can remove this quick hack
                 <Route path="/view/:pollId" render={(props) => {return <ViewPoll history={props.history} match={props.match}/>}} />
+                <Route path="/account" component={SignInScreen}/>
                 <Route path="/" render={(props) => <Home history={props.history} match={props.match}/>} />
                 <Route render={() => <h1>404: page not found</h1>} />
             </Switch>
@@ -97,6 +85,7 @@ function eventNotPresent(eventStart, events){
     )
     return true
 }
+
 function CreatePoll(props){
     let [events, setEvents] = useState([])
     let [eventDuration, setEventDuration] = useState(60) //duration is expressed in minutes
@@ -123,13 +112,15 @@ function CreatePoll(props){
         let pollRef = database.ref('/polls/').push()
         pollRef.set({
             title: title,
-            events: events
+            events: events, //should move events to a different subtree for performance reasons
+            owner: firebase.auth().currentUser.uid
         }, (error) => {
             console.log(error)
         })
-        //this.props.history.push('/view/' + pollref.key);
-        history.push('/');
+
         alert("created poll");
+        history.push('/');
+
     }
 
     function toEventEnd(start){
@@ -145,17 +136,18 @@ function CreatePoll(props){
 
     return (
         <div className='demo-app'>
-            {/*<CalendarSidebar*/}
-            {/*    changeEventDuration={(ev) => setEventDuration(ev.target.value)}*/}
-            {/*    changeTitle={(ev) => setTitle(ev.target.value)}*/}
-            {/*    title={title}*/}
-            {/*/>*/}
+            <CreatePollTopBar
+                changeEventDuration={(ev) => setEventDuration(ev.target.value)}
+                changeTitle={(ev) => setTitle(ev.target.value)}
+                title={title}
+                onSubmitPoll={submitPoll}
+            />
             <div className='demo-app-main'>
                 <div>
                     <Calendar
                         localizer={localizer}
                         events={events}
-                        views={['week', 'month']}
+                        views={['week']}
                         defaultView='week'
                         step={eventDuration}
                         timeslots={1}
@@ -167,14 +159,35 @@ function CreatePoll(props){
 
                     />
                 </div>
-                <div>
-                    <button onClick={submitPoll}>Submit</button>
-                </div>
             </div>
         </div>
     )
 }
 
+
+function CreatePollTopBar(props){
+    return (
+    <div className='demo-app-sidebar'>
+        <div className='demo-app-sidebar-section'>
+            <label htmlFor="event-duration">Event duration</label>
+
+            <select name="event-duration" onChange={props.changeEventDuration}>
+                <option value="60">1h</option>
+                <option value="120">2h</option>
+                <option value="180">3h</option>
+
+            </select>
+        </div>
+        <div className='demo-app-sidebar-section'>
+            <label>Insert Poll title</label>
+            <input onChange={props.changeTitle} placeholder={props.title}/>
+        </div>
+        <div className='demo-app-sidebar-section'>
+            <button onClick={props.onSubmitPoll}> Submit </button>
+        </div>
+    </div>
+)
+}
 
 // class CreatePoll extends React.Component {
 //         calendarRef = React.createRef()
@@ -308,13 +321,6 @@ function CalendarSidebar(props) {
 }
 
 
-function renderEventContent(eventInfo) {
-    return (
-        <>
-            <b>{eventInfo.timeText}</b>
-        </>
-    )
-}
 
 
 
