@@ -1,7 +1,7 @@
 {
   "private": true,
-  "name": "@fullcalendar-example-projects/react-redux",
-  "title": "FullCalendar React+Redux Example Project",
+  "name": "cuando",
+  "title": "Cuando Meeting scheduling",
   "version": "0.0.0",
   "license": "ISC",
   "scripts": {
@@ -17,9 +17,12 @@
     "@fullcalendar/moment": "^5.3.1",
     "@fullcalendar/react": "^5.0.0",
     "@fullcalendar/timegrid": "^5.0.0",
+    "@material-ui/core": "^4.11.0",
+    "@material-ui/icons": "^4.9.1",
     "firebase": "^7.24.0",
     "firebase-tools": "^8.13.1",
     "firebaseui": "^4.7.0",
+    "fontsource-roboto": "^3.0.3",
     "moment": "^2.29.1",
     "react": "^16.14.0",
     "react-big-calendar": "^0.28.1",
