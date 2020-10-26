@@ -29,6 +29,27 @@ b { /* used for event dates/times */
   margin-right: 3px;
 }
 
+.rbc-event.event-selected {
+  background-color: red;
+  border-color: red;
+}
+
+.not-available{
+  background-color: #e85353;
+  border-color: #e85353;
+}
+
+.available{
+  background-color: #5cce5c;
+  border-color: #5cce5c;
+}
+
+
+.footer {
+  position: fixed;
+  left: 0;
+  bottom: 0;
+}
 .demo-app {
   display: flex;
   flex-direction: column;
