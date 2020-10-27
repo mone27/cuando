@@ -5,26 +5,27 @@ import moment from "moment";
 import {Calendar, momentLocalizer} from "react-big-calendar";
 
 import {serializeEvents, serializeNewEvents} from "./utils"
+import {Button, TextField} from "@material-ui/core";
 
 let database =  firebase.database();
 const localizer = momentLocalizer(moment)
 
-function slotInEvents(eventsList, slotFind){
+function slotNotInEvents(eventsList, slotFind){
     for (let ev of eventsList){
         if (ev.start.getTime() === slotFind.getTime()){
-            return true;
+            return false;
         }
     }
-    return false;
+    return true;
 }
 
-function eventInSlots(slotsList, eventFind){
+function eventNotInSlots(slotsList, eventFind){
     for (let ev of slotsList){
         if (ev.getTime() === eventFind.start.getTime()){
-            return true;
+            return false;
         }
     }
-    return false;
+    return true;
 }
 
 function CreatePoll(props){
@@ -46,15 +47,13 @@ function CreatePoll(props){
     }
 
     function onSelect(selection) {
-        console.log(selection)
-        let slots = selection.slot
+        let slots = selection.slots
         slots.pop() // last slot in selection is not visually selected, so drop it
 
         setEvents((events) => {
-            events.filter(ev => !eventInSlots(slots, ev));
-            slots.filter(ev => !slotInEvents(events, ev));
-
-            return [...events, ...slotsToEvents(slots)]
+            let newEvents = events.filter((ev) => eventNotInSlots(slots, ev));
+            let newSlots = slots.filter(ev => slotNotInEvents(events, ev));
+            return [...newEvents, ...slotsToEvents(newSlots)]
         })
     }
 
@@ -129,11 +128,10 @@ function CreatePollTopBar(props){
                 </select>
             </div>
             <div className='demo-app-sidebar-section'>
-                <label>Insert Poll title</label>
-                <input onChange={props.changeTitle} placeholder={props.title}/>
+                <TextField label="Poll Title" onChange={props.changeTitle} placeholder={props.title}/>
             </div>
             <div className='demo-app-sidebar-section'>
-                <button onClick={props.onSubmitPoll}> Submit </button>
+                <Button onClick={props.onSubmitPoll} variant="contained" color="primary" > Create form </Button>
             </div>
         </div>
     )
